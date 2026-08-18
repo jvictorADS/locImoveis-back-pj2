@@ -1,10 +1,5 @@
 # ADR 002: Escolha do Banco de Dados
 
-**Status:** Aceito  
-**Data:** Fase de Projeto / Início do Projeto 2
-
----
-
 ## Contexto
 
 Com a stack de backend definida (**Spring Boot + Java**, conforme *ADR 001*), precisávamos escolher a tecnologia de banco de dados apropriada.

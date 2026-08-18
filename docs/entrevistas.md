@@ -27,12 +27,12 @@ O maior problema é essa desorganização, que consome um tempo considerável e 
 #### 2. Gestão Financeira e Segurança
 
 **Pergunta:**  
-Como é feita a cobrança e quão útil seria um dashboard financeiro no celular?
+Como é feita a cobrança e quão útil seria um dashboard financeiro no celular/computador?
 
 **Resposta:**  
 O processo hoje depende do inquilino mandar o comprovante do Pix pelo WhatsApp. Já tive problemas por anotar errado ou perder o histórico da conversa.
 
-Ter um painel no celular que me mostrasse na mesma hora o lucro do mês e quem está inadimplente seria excelente e me pouparia muita dor de cabeça.
+Ter um painel no celular ou no computador que me mostrasse na mesma hora o lucro do mês e quem está inadimplente seria excelente e me pouparia muita dor de cabeça.
 
 ---
 
@@ -54,7 +54,7 @@ Já esqueci de resolver problemas estruturais porque a mensagem desceu na tela e
 Se o app pudesse resolver apenas um problema, qual seria?
 
 **Resposta:**  
-Se pudesse resolver um problema, seria a questão de ver quem pagou e ter a noção financeira de uma certa.
+Se pudesse resolver um problema, seria a questão de ver quem pagou e ter a noção financeira de uma certa data.
 
 ---
 

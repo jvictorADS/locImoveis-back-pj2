@@ -1,23 +1,5 @@
 # ADR 001: Escolha de Stack Tecnológica
 
-**Status:** Aceito  
-**Data:** Fase de Projeto / Início do Projeto 2
-
----
-
-## Contexto
-
-O grupo precisava definir as tecnologias fundamentais que serão usadas para construir o **Loc Imóveis App**.
-
-A escolha precisou levar em conta:
-
-- O conhecimento técnico atual dos membros da equipe, focados em **Back-end e Full-Stack**.
-- As definições prévias estabelecidas no documento de Arquitetura (**Guia 2 do Projeto 1**).
-- A restrição arquitetural de que a primeira versão do sistema operará como um **sistema desktop**.
-- A necessidade de agilidade no desenvolvimento local e testes, justificando o uso de bancos em memória.
-
----
-
 ## Decisão
 
 Adotaremos a seguinte stack tecnológica:

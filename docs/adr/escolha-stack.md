@@ -1,17 +1,19 @@
 # ADR 001: Escolha de Stack Tecnológica
 
+# Contexto
+
+O grupo precisava definir as tecnologias fundamentais que serão usadas para construir o Loc Imóveis App. A escolha precisou levar em conta o conhecimento técnico da equipe, a viabilidade de entrega dentro do semestre e a restrição arquitetural de que a primeira versão operará como um sistema desktop.
 ## Decisão
 
 Adotaremos a seguinte stack tecnológica:
 
-| Camada | Tecnologia | Versão (Aprox.) |
-|---|---|---|
-| **Frontend (UI)** | React | 18+ |
-| **Backend (API)** | Java + Spring Boot | 3.x / Java 17+ |
-| **Banco de Dados (Prod/Principal)** | PostgreSQL | 15+ |
-| **Banco de Dados (Dev/Testes)** | H2 Database | - |
-| **Autenticação** | JWT (JSON Web Token) | - |
-| **Empacotamento Desktop** | Electron (ou Tauri) | - |
+| Camada | Tecnologia   | Versão (Aprox.) |
+|---|--------------|-----------------|
+| **Frontend (UI)** | React (VITE) | 8               |
+| **Backend (API)** | Java + Spring Boot | 3.x / Java 21   |
+| **Banco de Dados (Prod/Principal)** | PostgreSQL   | 16+             |
+| **Banco de Dados (Dev/Testes)** | H2 Database  | -               |
+| **Autenticação** | JWT (JSON Web Token) | -               |
 
 ---
 
@@ -32,12 +34,6 @@ Adotaremos a seguinte stack tecnológica:
 - **PostgreSQL** foi o banco relacional definido desde o Guia 2 por sua robustez, integridade de dados e conformidade com os padrões de mercado.
 - O **H2 Database** foi adicionado à stack para rodar em memória durante o desenvolvimento e a execução de testes automatizados, permitindo maior agilidade sem precisar subir um banco robusto a todo instante.
 - **MySQL** foi descartado para evitar mudança na arquitetura já validada no Projeto 1.
-
-### Desktop: Web Wrapper (Electron/Tauri) vs. JavaFX
-
-- Para cumprir o requisito de ser um **sistema desktop**, escolhemos utilizar tecnologias web (**React**) encapsuladas, em vez de criar telas nativas em JavaFX.
-- Essa abordagem permite reaproveitar **100% da interface** caso o sistema evolua para web pura no futuro.
-
 ---
 
 ## Consequências
@@ -51,7 +47,6 @@ Adotaremos a seguinte stack tecnológica:
 ### Negativas / Riscos
 
 - **Complexidade de Distribuição:** Empacotar um sistema desktop que dependa de um servidor Spring Boot rodando por trás, ou localmente, e uma interface React exige um fluxo de build mais complexo.
-- **Consumo de Memória:** O uso do modelo **Electron + Spring Boot** rodando na máquina do cliente pode consumir uma quantidade significativa de memória RAM.
 
 ---
 

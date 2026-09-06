@@ -20,7 +20,7 @@ public class Imovel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_Imovel")
-    private Long idImovel;
+    private Integer idImovel;
 
     @Column(name = "endereco", nullable = false)
     private String endereco;

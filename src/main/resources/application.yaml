@@ -1,0 +1,19 @@
+
+spring:
+  application:
+    name: loc-imoveis-app
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/locimoveis_db
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+server:
+  port: 8081 #modifique caso seja necessário
+

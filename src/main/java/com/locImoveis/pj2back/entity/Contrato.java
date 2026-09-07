@@ -21,12 +21,15 @@ public class Contrato {
     @Column(name = "id_contrato")
     private Integer id;
 
+    // início do contrato
     @Column(name = "data_inicio", nullable = false)
     private LocalDate dataInicio;
 
+    // fim do contrato
     @Column(name = "data_fim", nullable = false)
     private LocalDate dataFim;
 
+    // dia do pagamento
     @Column(name = "dia_vencimento", nullable = false)
     private LocalDate diaVencimento;
 

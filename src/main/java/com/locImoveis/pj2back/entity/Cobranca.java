@@ -35,8 +35,8 @@ public class Cobranca {
     private BigDecimal valor;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "pagamento_status", nullable = false)
-    private CobrancaStatus pagamentoStatus;
+    @Column(name = "cobranca_status", nullable = false)
+    private CobrancaStatus cobrancaStatus;
 
     @Column(name = "link_arquivo_pdf")
     private String linkArquivoPdf;

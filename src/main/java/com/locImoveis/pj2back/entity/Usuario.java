@@ -1,5 +1,6 @@
 package com.locImoveis.pj2back.entity;
 
+import com.locImoveis.pj2back.entity.enums.ContaStatus;
 import com.locImoveis.pj2back.entity.enums.TipoUsuario;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -34,6 +35,10 @@ public class Usuario {
 
     @Column(name = "senha", nullable = false)
     private String senha;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "conta_status", nullable = false)
+    private ContaStatus contaStatus;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_usuario", nullable = false)

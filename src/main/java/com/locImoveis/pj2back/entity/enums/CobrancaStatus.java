@@ -2,6 +2,6 @@ package com.locImoveis.pj2back.entity.enums;
 
 public enum CobrancaStatus {
     PENDENTE,
-    PAGO,
-    ATRASADO
+    PAGA,
+    ATRASADA
 }

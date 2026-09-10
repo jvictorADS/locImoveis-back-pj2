@@ -28,7 +28,7 @@ public class Cobranca {
     @Column(name = "data_vencimento", nullable = false)
     private LocalDate dataVencimento;
 
-    @Column(name = "data_pagamento", nullable = false)
+    @Column(name = "data_pagamento")
     private LocalDate dataPagamento;
 
     @Column(name = "valor", nullable = false)

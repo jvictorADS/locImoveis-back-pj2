@@ -19,7 +19,7 @@ public class Contrato {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_contrato")
-    private Integer id;
+    private Integer idContrato;
 
     // início do contrato
     @Column(name = "data_inicio", nullable = false)
@@ -31,7 +31,7 @@ public class Contrato {
 
     // dia do pagamento
     @Column(name = "dia_vencimento", nullable = false)
-    private LocalDate diaVencimento;
+    private Integer diaVencimento;
 
     // caso aja acordo entre locador e locatario em relação a um desconto no aluguel
     @Column(name = "valor_acordado", nullable = false)
@@ -41,7 +41,7 @@ public class Contrato {
     @Column(name = "data_proximo_reajuste")
     private LocalDate dataProximoReajuste;
 
-    // indice de aumento (IPCA, IGPM, Fixo)
+    // indice de aumento (IPCA, IGPM, Fixo, Nenhum)
     @Column(name = "indice_reajuste", length = 20)
     private String indiceReajuste;
 
@@ -50,7 +50,7 @@ public class Contrato {
     private ContratoStatus contratoStatus;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "imovel_id", nullable = false, unique = true)
+    @JoinColumn(name = "imovel_id", nullable = false)
     private Imovel imovel;
 
     @ManyToOne(fetch = FetchType.LAZY)

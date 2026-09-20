@@ -2,6 +2,7 @@ package com.locImoveis.pj2back.controller;
 
 import com.locImoveis.pj2back.dto.usuario.UsuarioRequestDTO;
 import com.locImoveis.pj2back.dto.usuario.UsuarioResponseDTO;
+import com.locImoveis.pj2back.dto.usuario.UsuarioUpdateDTO;
 import com.locImoveis.pj2back.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,17 @@ public class UsuarioController {
     public ResponseEntity<UsuarioResponseDTO> buscarPorId(@PathVariable Integer id){
         UsuarioResponseDTO responseDTO = usuarioService.buscarPorId(id);
         return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UsuarioResponseDTO> atualizar(@PathVariable Integer id, @RequestBody UsuarioUpdateDTO usuarioDTO){
+        return ResponseEntity.ok(usuarioService.atualizarUsuario(id, usuarioDTO));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> inativar(@PathVariable Integer id) {
+        usuarioService.inativar(id);
+        return ResponseEntity.noContent().build();
     }
 
 

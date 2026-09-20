@@ -64,4 +64,17 @@ public class ContratoService {
                 .stream().map(contratoMapper::toDto).collect(Collectors.toList());
     }
 
+    @Transactional
+    public ContratoResponseDTO rescindirContrato(Integer id) {
+        Contrato contrato = contratoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Contrato não encontrado!"));
+        contrato.setContratoStatus(ContratoStatus.RESCINDIDO);
+
+        Imovel imovel = contrato.getImovel();
+        imovel.setOcupacaoStatus(OcupacaoStatus.DISPONIVEL);
+        imovelRepository.save(imovel);
+
+        return contratoMapper.toDto(contratoRepository.save(contrato));
+    }
+
 }

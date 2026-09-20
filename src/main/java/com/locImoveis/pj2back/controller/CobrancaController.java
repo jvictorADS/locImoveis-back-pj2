@@ -38,4 +38,10 @@ public class CobrancaController {
         return ResponseEntity.ok(cobrancaService.listarPorContrato(contratoId));
     }
 
+    @DeleteMapping("/{id}/cancelar")
+    public ResponseEntity<CobrancaResponseDTO> cancelar(@PathVariable Integer id){
+        cobrancaService.cancelarCobranca(id);
+        return ResponseEntity.noContent().build();
+    }
+
 }

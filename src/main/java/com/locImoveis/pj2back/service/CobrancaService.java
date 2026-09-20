@@ -64,5 +64,17 @@ public class CobrancaService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    public void cancelarCobranca(Integer id){
+        Cobranca cobranca = cobrancaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Cobranca não encontrada!"));
+
+        if(cobranca.getCobrancaStatus() == CobrancaStatus.PAGA) {
+            throw new IllegalStateException("Não é possível cancelar uma cobrança já paga!");
+        }
+
+        cobranca.setCobrancaStatus(CobrancaStatus.CANCELADA);
+        cobrancaRepository.save(cobranca);
+    }
 
 }

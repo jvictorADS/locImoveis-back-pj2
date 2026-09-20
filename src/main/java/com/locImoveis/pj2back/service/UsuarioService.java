@@ -2,6 +2,7 @@ package com.locImoveis.pj2back.service;
 
 import com.locImoveis.pj2back.dto.usuario.UsuarioRequestDTO;
 import com.locImoveis.pj2back.dto.usuario.UsuarioResponseDTO;
+import com.locImoveis.pj2back.dto.usuario.UsuarioUpdateDTO;
 import com.locImoveis.pj2back.entity.Usuario;
 import com.locImoveis.pj2back.entity.enums.ContaStatus;
 import com.locImoveis.pj2back.mapper.UsuarioMapper;
@@ -37,6 +38,22 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findById(id).orElseThrow(() ->
                 new IllegalArgumentException("Usuario não encontrado!"));
         return usuarioMapper.toDTO(usuario);
+    }
+
+    @Transactional
+    public UsuarioResponseDTO atualizarUsuario(Integer id, UsuarioUpdateDTO usuarioDTO) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado!"));
+        usuarioMapper.updateEntityFromDto(usuarioDTO, usuario);
+        return usuarioMapper.toDTO(usuarioRepository.save(usuario));
+    }
+
+    @Transactional
+    public void inativar(Integer id) {
+        Usuario usuario = usuarioRepository.findById(id).orElseThrow(() ->
+                new IllegalArgumentException("Usuario não encontrado!"));
+        usuario.setContaStatus(ContaStatus.INATIVA);
+        usuarioRepository.save(usuario);
     }
 
 }

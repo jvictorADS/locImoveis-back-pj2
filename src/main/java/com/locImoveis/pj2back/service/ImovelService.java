@@ -2,6 +2,7 @@ package com.locImoveis.pj2back.service;
 
 import com.locImoveis.pj2back.dto.imovel.ImovelRequestDTO;
 import com.locImoveis.pj2back.dto.imovel.ImovelResponseDTO;
+import com.locImoveis.pj2back.dto.imovel.ImovelUpdateDTO;
 import com.locImoveis.pj2back.entity.Imovel;
 import com.locImoveis.pj2back.entity.Usuario;
 import com.locImoveis.pj2back.entity.enums.OcupacaoStatus;
@@ -48,6 +49,14 @@ public class ImovelService {
         return imovelRepository.findByLocadorIdUsuario(locadorId)
                 .stream().map(imovelMapper::toDto)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public ImovelResponseDTO atualizarImovel(Integer id, ImovelUpdateDTO imovelDTO) {
+        Imovel imovel = imovelRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Imóvel não encontrado!"));
+        imovelMapper.updateEntityFromDto(imovelDTO, imovel);
+        return imovelMapper.toDto(imovelRepository.save(imovel));
     }
 
 }

@@ -33,4 +33,9 @@ public class ContratoController {
         return ResponseEntity.ok(contratoService.listarPorImovel(imovelId));
     }
 
+    @DeleteMapping("/{id}/rescindir")
+    public ResponseEntity<ContratoResponseDTO> rescindir(@PathVariable Integer id) {
+        return ResponseEntity.ok(contratoService.rescindirContrato(id));
+    }
+
 }

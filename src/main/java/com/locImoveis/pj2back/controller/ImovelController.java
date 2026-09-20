@@ -2,6 +2,7 @@ package com.locImoveis.pj2back.controller;
 
 import com.locImoveis.pj2back.dto.imovel.ImovelRequestDTO;
 import com.locImoveis.pj2back.dto.imovel.ImovelResponseDTO;
+import com.locImoveis.pj2back.dto.imovel.ImovelUpdateDTO;
 import com.locImoveis.pj2back.service.ImovelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -32,6 +33,11 @@ public class ImovelController {
     @GetMapping("/locador/{locadorId}")
     public ResponseEntity<List<ImovelResponseDTO>> listarPorLocador(@PathVariable Integer locadorId){
         return ResponseEntity.ok(imovelService.buscarPorLocador(locadorId));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ImovelResponseDTO> atualizar(@PathVariable Integer id, @RequestBody ImovelUpdateDTO imovelDTO){
+        return ResponseEntity.ok(imovelService.atualizarImovel(id,imovelDTO));
     }
 
 }

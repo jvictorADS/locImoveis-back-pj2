@@ -6,6 +6,7 @@ import com.locImoveis.pj2back.dto.imovel.ImovelUpdateDTO;
 import com.locImoveis.pj2back.entity.Imovel;
 import com.locImoveis.pj2back.entity.Usuario;
 import com.locImoveis.pj2back.entity.enums.OcupacaoStatus;
+import com.locImoveis.pj2back.entity.enums.TipoUsuario;
 import com.locImoveis.pj2back.mapper.ImovelMapper;
 import com.locImoveis.pj2back.repository.ImovelRepository;
 import com.locImoveis.pj2back.repository.UsuarioRepository;
@@ -29,6 +30,10 @@ public class ImovelService {
     public ImovelResponseDTO criarImovel(ImovelRequestDTO imovelDTO) {
         Usuario locador = usuarioRepository.findById(imovelDTO.locadorId())
                 .orElseThrow(() -> new IllegalArgumentException("Locador não encontrado!"));
+
+        if(locador.getTipoUsuario() == TipoUsuario.LOCATARIO) {
+            throw new IllegalArgumentException("Um usuário do tipo LOCATÁRIO não pode ser designado como proprietário de um imóvel.");
+        }
 
         Imovel imovel = imovelMapper.toEntity(imovelDTO);
         imovel.setLocador(locador);

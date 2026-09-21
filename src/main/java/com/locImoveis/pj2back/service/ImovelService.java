@@ -56,6 +56,12 @@ public class ImovelService {
                 .collect(Collectors.toList());
     }
 
+    public List<ImovelResponseDTO> listarPorStatus(OcupacaoStatus ocupacaoStatus) {
+        return imovelRepository.findByOcupacaoStatus(ocupacaoStatus)
+                .stream().map(imovelMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public ImovelResponseDTO atualizarImovel(Integer id, ImovelUpdateDTO imovelDTO) {
         Imovel imovel = imovelRepository.findById(id)

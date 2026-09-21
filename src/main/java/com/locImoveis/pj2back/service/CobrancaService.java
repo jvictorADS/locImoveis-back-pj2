@@ -5,6 +5,8 @@ import com.locImoveis.pj2back.dto.cobranca.CobrancaResponseDTO;
 import com.locImoveis.pj2back.entity.Cobranca;
 import com.locImoveis.pj2back.entity.Contrato;
 import com.locImoveis.pj2back.entity.enums.CobrancaStatus;
+import com.locImoveis.pj2back.entity.enums.ContratoStatus;
+import com.locImoveis.pj2back.entity.enums.OcupacaoStatus;
 import com.locImoveis.pj2back.mapper.CobrancaMapper;
 import com.locImoveis.pj2back.repository.CobrancaRepository;
 import com.locImoveis.pj2back.repository.ContratoRepository;
@@ -28,6 +30,10 @@ public class CobrancaService {
     public CobrancaResponseDTO criarCobrança(CobrancaRequestDTO cobrancaDTO) {
         Contrato contrato = contratoRepository.findById(cobrancaDTO.contratoId())
                 .orElseThrow(() -> new IllegalArgumentException("Contrato não encontrado!"));
+
+        if (contrato.getContratoStatus() != ContratoStatus.ATIVO) { // Ajuste conforme seu Enum
+            throw new IllegalStateException("Não é possível gerar cobranças para um contrato que não está ativo.");
+        }
 
         Cobranca cobranca = cobrancaMapper.toEntity(cobrancaDTO);
         cobranca.setContrato(contrato);
@@ -63,6 +69,13 @@ public class CobrancaService {
                 .stream().map(cobrancaMapper::toDto)
                 .collect(Collectors.toList());
     }
+
+    public List<CobrancaResponseDTO> listarPorStatus(CobrancaStatus cobrancaStatus){
+        return cobrancaRepository.findByCobrancaStatus(cobrancaStatus)
+                .stream().map(cobrancaMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
 
     @Transactional
     public void cancelarCobranca(Integer id){

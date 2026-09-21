@@ -4,6 +4,7 @@ import com.locImoveis.pj2back.dto.contrato.ContratoRequestDTO;
 import com.locImoveis.pj2back.dto.contrato.ContratoResponseDTO;
 import com.locImoveis.pj2back.service.ContratoService;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +32,11 @@ public class ContratoController {
     @GetMapping("/imovel/{imovelId}")
     public ResponseEntity<List<ContratoResponseDTO>> listarPorImovel(@PathVariable Integer imovelId) {
         return ResponseEntity.ok(contratoService.listarPorImovel(imovelId));
+    }
+
+    @GetMapping("/locatario/{locatarioId}")
+    public ResponseEntity<List<ContratoResponseDTO>> listarPorLocatario(@PathVariable  Integer locatarioId) {
+        return ResponseEntity.ok(contratoService.listarPorLocatario(locatarioId));
     }
 
     @DeleteMapping("/{id}/rescindir")

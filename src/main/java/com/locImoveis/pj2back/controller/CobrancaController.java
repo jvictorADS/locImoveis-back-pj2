@@ -2,6 +2,8 @@ package com.locImoveis.pj2back.controller;
 
 import com.locImoveis.pj2back.dto.cobranca.CobrancaRequestDTO;
 import com.locImoveis.pj2back.dto.cobranca.CobrancaResponseDTO;
+import com.locImoveis.pj2back.entity.enums.CobrancaStatus;
+import com.locImoveis.pj2back.entity.enums.OcupacaoStatus;
 import com.locImoveis.pj2back.service.CobrancaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -36,6 +38,17 @@ public class CobrancaController {
     @GetMapping("/contrato/{contratoId}")
     public ResponseEntity<List<CobrancaResponseDTO>> listarPorContrato(@PathVariable Integer contratoId){
         return ResponseEntity.ok(cobrancaService.listarPorContrato(contratoId));
+    }
+
+    @GetMapping("/status/{status}")
+    public ResponseEntity<List<CobrancaResponseDTO>> listarPorStatus(@PathVariable CobrancaStatus status){
+        return ResponseEntity.ok(cobrancaService.listarPorStatus(status));
+    }
+
+    @DeleteMapping("/{id}/cancelar")
+    public ResponseEntity<CobrancaResponseDTO> cancelar(@PathVariable Integer id){
+        cobrancaService.cancelarCobranca(id);
+        return ResponseEntity.noContent().build();
     }
 
 }

@@ -29,6 +29,10 @@ public class ContratoService {
 
     @Transactional
     public ContratoResponseDTO criarContrato(ContratoRequestDTO contratoDTO) {
+        if (!contratoDTO.dataFim().isAfter(contratoDTO.dataInicio())) {
+            throw new IllegalArgumentException("A data de término do contrato deve ser posterior à data de início.");
+        }
+
         Imovel imovel = imovelRepository.findById(contratoDTO.imovelId())
                 .orElseThrow(() -> new IllegalArgumentException("Imóvel não encontrado!"));
 
@@ -62,6 +66,25 @@ public class ContratoService {
     public List<ContratoResponseDTO> listarPorImovel(Integer imovelId){
         return contratoRepository.findByImovelIdImovel(imovelId)
                 .stream().map(contratoMapper::toDto).collect(Collectors.toList());
+    }
+
+    public List<ContratoResponseDTO> listarPorLocatario(Integer locatarioId){
+        return contratoRepository.findByLocatarioIdUsuario(locatarioId)
+                .stream().map(contratoMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public ContratoResponseDTO rescindirContrato(Integer id) {
+        Contrato contrato = contratoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Contrato não encontrado!"));
+        contrato.setContratoStatus(ContratoStatus.RESCINDIDO);
+
+        Imovel imovel = contrato.getImovel();
+        imovel.setOcupacaoStatus(OcupacaoStatus.DISPONIVEL);
+        imovelRepository.save(imovel);
+
+        return contratoMapper.toDto(contratoRepository.save(contrato));
     }
 
 }

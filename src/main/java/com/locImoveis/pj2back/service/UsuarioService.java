@@ -9,6 +9,7 @@ import com.locImoveis.pj2back.entity.enums.TipoUsuario;
 import com.locImoveis.pj2back.mapper.UsuarioMapper;
 import com.locImoveis.pj2back.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,7 @@ public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
     private final UsuarioMapper usuarioMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public UsuarioResponseDTO criarUsuario(UsuarioRequestDTO usuarioDTO) {
@@ -32,6 +34,7 @@ public class UsuarioService {
         }
 
         Usuario usuario = usuarioMapper.toEntity(usuarioDTO);
+        usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
         usuario.setContaStatus(ContaStatus.ATIVA);
 
         Usuario usuarioSalvo = usuarioRepository.save(usuario);

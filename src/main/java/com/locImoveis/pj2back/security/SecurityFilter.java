@@ -28,19 +28,26 @@ public class SecurityFilter extends OncePerRequestFilter {
 
         if (token != null) {
             String email = tokenService.validateToken(token);
+            System.out.println(">>> Email extraído do Token: " + email);
+
             if (email != null && !email.isBlank()) {
                 UserDetails usuario = usuarioRepository.findByEmail(email).orElse(null);
+                System.out.println(">>> Usuário encontrado no banco: " + (usuario != null));
+
+                if (usuario != null) {
+                    System.out.println(">>> Usuário está enabled?: " + usuario.isEnabled());
+                }
 
                 if (usuario != null && usuario.isEnabled()) {
                     var authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
                     SecurityContextHolder.getContext().setAuthentication(authentication);
+                    System.out.println(">>> Autenticação definida no SecurityContext com sucesso!");
                 }
             }
         }
 
         filterChain.doFilter(request, response);
     }
-
     private String recoverToken(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {

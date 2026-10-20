@@ -10,6 +10,7 @@ import com.locImoveis.pj2back.entity.enums.TipoUsuario;
 import com.locImoveis.pj2back.mapper.ImovelMapper;
 import com.locImoveis.pj2back.repository.ImovelRepository;
 import com.locImoveis.pj2back.repository.UsuarioRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -68,6 +69,13 @@ public class ImovelService {
                 .orElseThrow(() -> new IllegalArgumentException("Imóvel não encontrado!"));
         imovelMapper.updateEntityFromDto(imovelDTO, imovel);
         return imovelMapper.toDto(imovelRepository.save(imovel));
+    }
+
+    public void deletarImovel(Integer id) {
+        if (!imovelRepository.existsById(id)) {
+            throw new EntityNotFoundException("Imóvel não encontrado com id: " + id);
+        }
+        imovelRepository.deleteById(id);
     }
 
 }

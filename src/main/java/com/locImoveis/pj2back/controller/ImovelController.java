@@ -47,4 +47,10 @@ public class ImovelController {
         return ResponseEntity.ok(imovelService.atualizarImovel(id,imovelDTO));
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletar(@PathVariable Integer id) {
+        imovelService.deletarImovel(id);
+        return ResponseEntity.noContent().build();
+    }
+
 }

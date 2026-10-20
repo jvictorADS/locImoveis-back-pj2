@@ -40,6 +40,7 @@ public class TokenService {
                     .verify(token)
                     .getSubject();
         } catch (JWTVerificationException exception) {
+            System.out.println(">>> Exceção na validação JWT: " + exception.getMessage());
             return "";
         }
     }

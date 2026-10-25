@@ -3,13 +3,17 @@ package com.locImoveis.pj2back.controller;
 import com.locImoveis.pj2back.dto.imovel.ImovelRequestDTO;
 import com.locImoveis.pj2back.dto.imovel.ImovelResponseDTO;
 import com.locImoveis.pj2back.dto.imovel.ImovelUpdateDTO;
+import com.locImoveis.pj2back.entity.Imovel;
 import com.locImoveis.pj2back.entity.enums.OcupacaoStatus;
+import com.locImoveis.pj2back.mapper.ImovelMapper;
 import com.locImoveis.pj2back.service.ImovelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -20,6 +24,7 @@ import java.util.List;
 public class ImovelController {
 
     private final ImovelService imovelService;
+    private final ImovelMapper imovelMapper;
 
     @PostMapping
     public ResponseEntity<ImovelResponseDTO> criar(@RequestBody ImovelRequestDTO imovelDTO){
@@ -53,4 +58,11 @@ public class ImovelController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping(value = "/{id}/foto", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ImovelResponseDTO> uploadFoto(
+            @PathVariable Integer id,
+            @RequestParam("foto") MultipartFile file) {
+        Imovel imovelComFoto = imovelService.uploadFoto(id, file);
+        return ResponseEntity.ok(imovelMapper.toDto(imovelComFoto));
+    }
 }

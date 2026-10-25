@@ -38,4 +38,7 @@ public class Imovel {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "locador_id", nullable = false)
     private Usuario locador;
+
+    @Column(name = "foto_url")
+    private String fotoUrl;
 }

@@ -8,6 +8,7 @@ public record ImovelResponseDTO(
         Integer idImovel,
         String endereco,
         BigDecimal valorAluguel,
-        OcupacaoStatus ocupacaoStatus
+        OcupacaoStatus ocupacaoStatus,
+        String fotoUrl
 ) {
 }

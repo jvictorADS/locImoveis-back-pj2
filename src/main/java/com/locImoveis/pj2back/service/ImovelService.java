@@ -14,7 +14,13 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -76,6 +82,36 @@ public class ImovelService {
             throw new EntityNotFoundException("Imóvel não encontrado com id: " + id);
         }
         imovelRepository.deleteById(id);
+    }
+
+    // upload para foto do imóvel
+    public Imovel uploadFoto(Integer id, MultipartFile file) {
+        Imovel imovel = imovelRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Imóvel não encontrado"));
+
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("O ficheiro enviado está vazio.");
+        }
+
+        try {
+            // Cria a pasta 'uploads' caso não exista
+            Path uploadPath = Paths.get("uploads");
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);}
+
+            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            Path filePath = uploadPath.resolve(fileName);
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            // Define a URL pública de acesso à imagem
+            String fotoUrl = "http://localhost:8081/uploads/" + fileName;
+            imovel.setFotoUrl(fotoUrl);
+
+            return imovelRepository.save(imovel);
+
+        } catch (IOException e) {
+            throw new RuntimeException("Erro ao guardar a imagem: " + e.getMessage());
+        }
     }
 
 }

@@ -9,7 +9,8 @@ public record UsuarioRequestDTO(
         @NotBlank(message = "O CPF é obrigatório") String cpf,
         @NotBlank(message = "O telefone é obrigatório") String telefone,
         @NotBlank(message = "O email é obrigatório") String email,
-        @NotBlank(message = "A senha é obrigatória") String senha,
+//      @NotBlank(message = "A senha é obrigatória")
+        String senha,
         @NotNull(message = "O tipo de usuário é obrigatório") TipoUsuario tipoUsuario
 ) {
 }

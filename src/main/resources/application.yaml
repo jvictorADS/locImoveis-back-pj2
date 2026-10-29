@@ -13,10 +13,13 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+  web:
+    error:
+      include-binding-errors: always
+      include-message: always
 
 server:
   port: 8081 #modifique caso seja necessário
-
 api:
   security:
     token:

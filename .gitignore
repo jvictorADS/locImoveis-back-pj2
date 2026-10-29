@@ -21,7 +21,6 @@ target/
 *.ipr
 /ia
 
-
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
@@ -37,3 +36,7 @@ build/
 
 ### Custom Uploads ###
 uploads/
+
+### Logs e PDFs locais ###
+*.log
+*.pdf

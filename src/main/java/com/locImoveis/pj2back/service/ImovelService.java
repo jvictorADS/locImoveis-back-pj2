@@ -9,9 +9,9 @@ import com.locImoveis.pj2back.entity.enums.OcupacaoStatus;
 import com.locImoveis.pj2back.entity.enums.TipoUsuario;
 import com.locImoveis.pj2back.mapper.ImovelMapper;
 import com.locImoveis.pj2back.repository.ImovelRepository;
-import com.locImoveis.pj2back.repository.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,16 +30,12 @@ public class ImovelService {
 
     private final ImovelRepository imovelRepository;
     private final ImovelMapper imovelMapper;
-    private final UsuarioRepository usuarioRepository;
 
 
     @Transactional
-    public ImovelResponseDTO criarImovel(ImovelRequestDTO imovelDTO) {
-        Usuario locador = usuarioRepository.findById(imovelDTO.locadorId())
-                .orElseThrow(() -> new IllegalArgumentException("Locador não encontrado!"));
-
-        if(locador.getTipoUsuario() == TipoUsuario.LOCATARIO) {
-            throw new IllegalArgumentException("Um usuário do tipo LOCATÁRIO não pode ser designado como proprietário de um imóvel.");
+    public ImovelResponseDTO criarImovel(ImovelRequestDTO imovelDTO, Usuario locador) {
+        if (locador == null || locador.getTipoUsuario() != TipoUsuario.LOCADOR) {
+            throw new AccessDeniedException("Somente proprietários podem cadastrar imóveis.");
         }
 
         Imovel imovel = imovelMapper.toEntity(imovelDTO);
@@ -51,43 +47,42 @@ public class ImovelService {
         return imovelMapper.toDto(imovelSalvo);
     }
 
-    public ImovelResponseDTO buscarPorId(Integer id) {
-        Imovel imovel = imovelRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Imovel não encontrado!"));
+    @Transactional(readOnly = true)
+    public ImovelResponseDTO buscarPorId(Integer id, Usuario locador) {
+        Imovel imovel = buscarDoLocador(id, locador);
         return imovelMapper.toDto(imovel);
     }
 
-    public List<ImovelResponseDTO> buscarPorLocador(Integer locadorId) {
-        return imovelRepository.findByLocadorIdUsuario(locadorId)
+    @Transactional(readOnly = true)
+    public List<ImovelResponseDTO> buscarPorLocador(Usuario locador) {
+        exigirLocador(locador);
+        return imovelRepository.findByLocadorIdUsuario(locador.getIdUsuario())
                 .stream().map(imovelMapper::toDto)
                 .collect(Collectors.toList());
     }
 
-    public List<ImovelResponseDTO> listarPorStatus(OcupacaoStatus ocupacaoStatus) {
-        return imovelRepository.findByOcupacaoStatus(ocupacaoStatus)
+    @Transactional(readOnly = true)
+    public List<ImovelResponseDTO> listarPorStatus(OcupacaoStatus ocupacaoStatus, Usuario locador) {
+        exigirLocador(locador);
+        return imovelRepository.findByLocadorIdUsuarioAndOcupacaoStatus(locador.getIdUsuario(), ocupacaoStatus)
                 .stream().map(imovelMapper::toDto)
                 .collect(Collectors.toList());
     }
 
     @Transactional
-    public ImovelResponseDTO atualizarImovel(Integer id, ImovelUpdateDTO imovelDTO) {
-        Imovel imovel = imovelRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Imóvel não encontrado!"));
+    public ImovelResponseDTO atualizarImovel(Integer id, ImovelUpdateDTO imovelDTO, Usuario locador) {
+        Imovel imovel = buscarDoLocador(id, locador);
         imovelMapper.updateEntityFromDto(imovelDTO, imovel);
         return imovelMapper.toDto(imovelRepository.save(imovel));
     }
 
-    public void deletarImovel(Integer id) {
-        if (!imovelRepository.existsById(id)) {
-            throw new EntityNotFoundException("Imóvel não encontrado com id: " + id);
-        }
-        imovelRepository.deleteById(id);
+    public void deletarImovel(Integer id, Usuario locador) {
+        imovelRepository.delete(buscarDoLocador(id, locador));
     }
 
     // upload para foto do imóvel
-    public Imovel uploadFoto(Integer id, MultipartFile file) {
-        Imovel imovel = imovelRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Imóvel não encontrado"));
+    public Imovel uploadFoto(Integer id, MultipartFile file, Usuario locador) {
+        Imovel imovel = buscarDoLocador(id, locador);
 
         if (file.isEmpty()) {
             throw new IllegalArgumentException("O ficheiro enviado está vazio.");
@@ -111,6 +106,22 @@ public class ImovelService {
 
         } catch (IOException e) {
             throw new RuntimeException("Erro ao guardar a imagem: " + e.getMessage());
+        }
+    }
+
+    private Imovel buscarDoLocador(Integer id, Usuario locador) {
+        exigirLocador(locador);
+        Imovel imovel = imovelRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Imóvel não encontrado."));
+        if (!imovel.getLocador().getIdUsuario().equals(locador.getIdUsuario())) {
+            throw new EntityNotFoundException("Imóvel não encontrado.");
+        }
+        return imovel;
+    }
+
+    private void exigirLocador(Usuario locador) {
+        if (locador == null || locador.getTipoUsuario() != TipoUsuario.LOCADOR) {
+            throw new AccessDeniedException("Operação disponível somente para proprietários.");
         }
     }
 

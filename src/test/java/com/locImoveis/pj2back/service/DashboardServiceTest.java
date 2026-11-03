@@ -1,6 +1,7 @@
 package com.locImoveis.pj2back.service;
 
 import com.locImoveis.pj2back.entity.Cobranca;
+import com.locImoveis.pj2back.entity.PedidoManutencao;
 import com.locImoveis.pj2back.entity.Usuario;
 import com.locImoveis.pj2back.entity.enums.CobrancaStatus;
 import com.locImoveis.pj2back.repository.CobrancaRepository;
@@ -14,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -59,11 +61,20 @@ class DashboardServiceTest {
         when(cobrancaRepository.findByContrato_Imovel_Locador_IdUsuario(locadorId)).thenReturn(cobrancas);
         when(imovelRepository.findByLocadorIdUsuario(locadorId)).thenReturn(List.of());
         when(manutencaoRepository.findByContrato_Imovel_Locador_IdUsuarioOrderByDataAberturaDesc(locadorId))
-                .thenReturn(List.of());
+                .thenReturn(List.of(PedidoManutencao.builder()
+                        .dataAbertura(hoje)
+                        .valorGasto(new BigDecimal("200.00"))
+                        .build()));
 
         var resumo = dashboardService.buscarResumo(Usuario.builder().idUsuario(locadorId).build());
 
         assertThat(resumo.recebidoMes()).isEqualByComparingTo("1250.00");
         assertThat(resumo.totalPendente()).isEqualByComparingTo("400.00");
+        assertThat(resumo.fluxoCaixa()).hasSize(12);
+        assertThat(resumo.fluxoCaixa().get(11).mes()).isEqualTo(YearMonth.from(hoje).toString());
+        assertThat(resumo.fluxoCaixa().get(11).recebido()).isEqualByComparingTo("1250.00");
+        assertThat(resumo.fluxoCaixa().get(10).recebido()).isEqualByComparingTo("900.00");
+        assertThat(resumo.fluxoCaixa().get(11).gastosReformas()).isEqualByComparingTo("200.00");
+        assertThat(resumo.fluxoCaixa().get(11).inadimplencia()).isEqualByComparingTo("0.00");
     }
 }

@@ -5,6 +5,7 @@ import com.locImoveis.pj2back.entity.Cobranca;
 import com.locImoveis.pj2back.entity.Contrato;
 import com.locImoveis.pj2back.entity.Imovel;
 import com.locImoveis.pj2back.entity.Usuario;
+import com.locImoveis.pj2back.entity.enums.TipoUsuario;
 import com.locImoveis.pj2back.mapper.CobrancaMapper;
 import com.locImoveis.pj2back.repository.CobrancaRepository;
 import com.locImoveis.pj2back.repository.ContratoRepository;
@@ -46,7 +47,7 @@ class CobrancaServiceTest {
     @Test
     void geraUmaParcelaPorMesEReutilizaParcelasAoAbrirNovamente() {
         Integer contratoId = 32;
-        Usuario locador = Usuario.builder().idUsuario(15).build();
+        Usuario locador = Usuario.builder().idUsuario(15).tipoUsuario(TipoUsuario.LOCADOR).build();
         Contrato contrato = Contrato.builder()
                 .idContrato(contratoId)
                 .dataInicio(LocalDate.of(2026, 1, 1))

@@ -8,12 +8,14 @@ import com.locImoveis.pj2back.entity.Imovel;
 import com.locImoveis.pj2back.entity.Usuario;
 import com.locImoveis.pj2back.entity.enums.ContratoStatus;
 import com.locImoveis.pj2back.entity.enums.OcupacaoStatus;
+import com.locImoveis.pj2back.entity.enums.TipoUsuario;
 import com.locImoveis.pj2back.mapper.ContratoMapper;
 import com.locImoveis.pj2back.repository.ContratoRepository;
 import com.locImoveis.pj2back.repository.ImovelRepository;
 import com.locImoveis.pj2back.repository.UsuarioRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,7 +33,8 @@ public class ContratoService {
     private final ImovelRepository imovelRepository;
 
     @Transactional
-    public ContratoResponseDTO criarContrato(ContratoRequestDTO contratoDTO) {
+    public ContratoResponseDTO criarContrato(ContratoRequestDTO contratoDTO, Usuario locador) {
+        exigirLocador(locador);
         if (contratoDTO.imovelId() == null || contratoDTO.locatarioId() == null) {
             throw new IllegalArgumentException("Imóvel e Locatário devem ser informados.");
         }
@@ -46,6 +49,9 @@ public class ContratoService {
 
         Imovel imovel = imovelRepository.findById(contratoDTO.imovelId())
                 .orElseThrow(() -> new IllegalArgumentException("Imóvel não encontrado!"));
+        if (!imovel.getLocador().getIdUsuario().equals(locador.getIdUsuario())) {
+            throw new IllegalArgumentException("Imóvel não encontrado!");
+        }
 
         if (imovel.getOcupacaoStatus() != OcupacaoStatus.DISPONIVEL) {
             throw new IllegalStateException("Imóvel selecionado não está disponível para locação!");
@@ -53,6 +59,11 @@ public class ContratoService {
 
         Usuario locatario = usuarioRepository.findById(contratoDTO.locatarioId())
                 .orElseThrow(() -> new IllegalArgumentException("Locatário não encontrado!"));
+        if (locatario.getTipoUsuario() != TipoUsuario.LOCATARIO
+                || !usuarioRepository.pertenceAoLocador(
+                        locatario.getIdUsuario(), locador.getIdUsuario(), TipoUsuario.LOCATARIO)) {
+            throw new IllegalArgumentException("Locatário não encontrado!");
+        }
 
         Contrato contrato = contratoMapper.toEntity(contratoDTO);
         contrato.setImovel(imovel);
@@ -74,34 +85,44 @@ public class ContratoService {
         return contratoMapper.toDto(contratoSalvo);
     }
 
-    public ContratoResponseDTO buscarPorId(Integer id) {
-        Contrato contrato = contratoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Contrato não encontrado!"));
+    @Transactional
+    public ContratoResponseDTO buscarPorId(Integer id, Usuario locador) {
+        Contrato contrato = buscarDoLocador(id, locador);
         return contratoMapper.toDto(contrato);
     }
 
-    public List<ContratoResponseDTO> listarPorImovel(Integer imovelId) {
+    @Transactional
+    public List<ContratoResponseDTO> listarPorImovel(Integer imovelId, Usuario locador) {
+        buscarImovelDoLocador(imovelId, locador);
         return contratoRepository.findByImovelIdImovel(imovelId)
                 .stream().map(contratoMapper::toDto).collect(Collectors.toList());
     }
 
-    public List<ContratoResponseDTO> listarPorLocatario(Integer locatarioId) {
+    @Transactional
+    public List<ContratoResponseDTO> listarPorLocatario(Integer locatarioId, Usuario locador) {
+        exigirLocador(locador);
+        if (!usuarioRepository.pertenceAoLocador(locatarioId, locador.getIdUsuario(), TipoUsuario.LOCATARIO)) {
+            throw new IllegalArgumentException("Locatário não encontrado!");
+        }
         return contratoRepository.findByLocatarioIdUsuario(locatarioId)
-                .stream().map(contratoMapper::toDto)
+                .stream()
+                .filter(contrato -> contrato.getImovel().getLocador().getIdUsuario().equals(locador.getIdUsuario()))
+                .map(contratoMapper::toDto)
                 .collect(Collectors.toList());
     }
 
-    public List<ContratoResponseDTO> listarTodos() {
-        return contratoRepository.findAll()
+    @Transactional
+    public List<ContratoResponseDTO> listarTodos(Usuario locador) {
+        exigirLocador(locador);
+        return contratoRepository.findByImovel_Locador_IdUsuarioOrderByDataInicioDesc(locador.getIdUsuario())
                 .stream()
                 .map(contratoMapper::toDto)
                 .collect(Collectors.toList());
     }
 
     @Transactional
-    public ContratoResponseDTO rescindirContrato(Integer id) {
-        Contrato contrato = contratoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Contrato não encontrado!"));
+    public ContratoResponseDTO rescindirContrato(Integer id, Usuario locador) {
+        Contrato contrato = buscarDoLocador(id, locador);
         contrato.setContratoStatus(ContratoStatus.RESCINDIDO);
 
         Imovel imovel = contrato.getImovel();
@@ -114,9 +135,8 @@ public class ContratoService {
     }
 
     @Transactional
-    public ContratoResponseDTO atualizarContrato(Integer id, ContratoUpdateDTO dto) {
-        Contrato contrato = contratoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Contrato não encontrado!"));
+    public ContratoResponseDTO atualizarContrato(Integer id, ContratoUpdateDTO dto, Usuario locador) {
+        Contrato contrato = buscarDoLocador(id, locador);
 
         if (dto.dataInicio() != null) {
             contrato.setDataInicio(dto.dataInicio());
@@ -163,9 +183,8 @@ public class ContratoService {
 
 
     @Transactional
-    public ContratoResponseDTO uploadDocumento(Integer id, MultipartFile arquivo) {
-        Contrato contrato = contratoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Contrato não encontrado!"));
+    public ContratoResponseDTO uploadDocumento(Integer id, MultipartFile arquivo, Usuario locador) {
+        Contrato contrato = buscarDoLocador(id, locador);
 
         try {
             contrato.setArquivoPdf(arquivo.getBytes());
@@ -176,14 +195,40 @@ public class ContratoService {
         }
     }
 
-    public byte[] obterDocumento(Integer id) {
-        Contrato contrato = contratoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Contrato não encontrado!"));
+    @Transactional
+    public byte[] obterDocumento(Integer id, Usuario locador) {
+        Contrato contrato = buscarDoLocador(id, locador);
 
         if (contrato.getArquivoPdf() == null || contrato.getArquivoPdf().length == 0) {
             throw new IllegalStateException("Nenhum arquivo PDF anexado a este contrato.");
         }
 
         return contrato.getArquivoPdf();
+    }
+
+    private Contrato buscarDoLocador(Integer id, Usuario locador) {
+        exigirLocador(locador);
+        Contrato contrato = contratoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Contrato não encontrado."));
+        if (!contrato.getImovel().getLocador().getIdUsuario().equals(locador.getIdUsuario())) {
+            throw new IllegalArgumentException("Contrato não encontrado.");
+        }
+        return contrato;
+    }
+
+    private Imovel buscarImovelDoLocador(Integer id, Usuario locador) {
+        exigirLocador(locador);
+        Imovel imovel = imovelRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Imóvel não encontrado."));
+        if (!imovel.getLocador().getIdUsuario().equals(locador.getIdUsuario())) {
+            throw new IllegalArgumentException("Imóvel não encontrado.");
+        }
+        return imovel;
+    }
+
+    private void exigirLocador(Usuario locador) {
+        if (locador == null || locador.getTipoUsuario() != TipoUsuario.LOCADOR) {
+            throw new AccessDeniedException("Operação disponível somente para proprietários.");
+        }
     }
 }

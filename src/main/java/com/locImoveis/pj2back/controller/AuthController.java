@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,6 +40,14 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<UsuarioResponseDTO> register(@Valid @RequestBody UsuarioRequestDTO data) {
+        if (data.tipoUsuario() != com.locImoveis.pj2back.entity.enums.TipoUsuario.LOCADOR) {
+            throw new IllegalArgumentException("O cadastro público está disponível somente para proprietários.");
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.criarUsuario(data));
+    }
+
+    @org.springframework.web.bind.annotation.GetMapping("/me")
+    public UsuarioResponseDTO me(@AuthenticationPrincipal Usuario usuario) {
+        return usuarioService.toResponse(usuario);
     }
 }

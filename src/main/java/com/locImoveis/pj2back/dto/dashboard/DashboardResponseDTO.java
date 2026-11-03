@@ -9,8 +9,16 @@ public record DashboardResponseDTO(
         BigDecimal totalPendente,
         long imoveisAlugados,
         long imoveisVagos,
-        List<InadimplenteDTO> inadimplentes
+        List<InadimplenteDTO> inadimplentes,
+        List<FluxoCaixaMensalDTO> fluxoCaixa
 ) {
+    public record FluxoCaixaMensalDTO(
+            String mes,
+            BigDecimal recebido,
+            BigDecimal gastosReformas,
+            BigDecimal inadimplencia
+    ) {}
+
     public record InadimplenteDTO(
             Integer id,
             String inquilino,

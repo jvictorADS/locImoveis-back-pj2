@@ -7,10 +7,12 @@ import com.locImoveis.pj2back.entity.Contrato;
 import com.locImoveis.pj2back.entity.Usuario;
 import com.locImoveis.pj2back.entity.enums.CobrancaStatus;
 import com.locImoveis.pj2back.entity.enums.ContratoStatus;
+import com.locImoveis.pj2back.entity.enums.TipoUsuario;
 import com.locImoveis.pj2back.mapper.CobrancaMapper;
 import com.locImoveis.pj2back.repository.CobrancaRepository;
 import com.locImoveis.pj2back.repository.ContratoRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,9 +32,8 @@ public class CobrancaService {
     private final ContratoRepository contratoRepository;
 
     @Transactional
-    public CobrancaResponseDTO criarCobrança(CobrancaRequestDTO cobrancaDTO) {
-        Contrato contrato = contratoRepository.findById(cobrancaDTO.contratoId())
-                .orElseThrow(() -> new IllegalArgumentException("Contrato não encontrado!"));
+    public CobrancaResponseDTO criarCobrança(CobrancaRequestDTO cobrancaDTO, Usuario locador) {
+        Contrato contrato = buscarContratoDoLocador(cobrancaDTO.contratoId(), locador);
 
         if (contrato.getContratoStatus() != ContratoStatus.ATIVO) { // Ajuste conforme seu Enum
             throw new IllegalStateException("Não é possível gerar cobranças para um contrato que não está ativo.");
@@ -119,29 +120,33 @@ public class CobrancaService {
         return cobrancaMapper.toDto(cobrancaRepository.save(cobranca));
     }
 
-    public CobrancaResponseDTO buscarPorId(Integer id){
-        Cobranca cobranca = cobrancaRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Cobranca não encontrada!"));
+    @Transactional(readOnly = true)
+    public CobrancaResponseDTO buscarPorId(Integer id, Usuario locador){
+        Cobranca cobranca = buscarCobrancaDoLocador(id, locador);
         return cobrancaMapper.toDto(cobranca);
     }
 
-    public List<CobrancaResponseDTO> listarPorContrato(Integer contratoId){
+    @Transactional(readOnly = true)
+    public List<CobrancaResponseDTO> listarPorContrato(Integer contratoId, Usuario locador){
+        buscarContratoDoLocador(contratoId, locador);
         return cobrancaRepository.findByContratoIdContrato(contratoId)
                 .stream().map(cobrancaMapper::toDto)
                 .collect(Collectors.toList());
     }
 
-    public List<CobrancaResponseDTO> listarPorStatus(CobrancaStatus cobrancaStatus){
-        return cobrancaRepository.findByCobrancaStatus(cobrancaStatus)
+    @Transactional(readOnly = true)
+    public List<CobrancaResponseDTO> listarPorStatus(CobrancaStatus cobrancaStatus, Usuario locador){
+        exigirLocador(locador);
+        return cobrancaRepository.findByContrato_Imovel_Locador_IdUsuarioAndCobrancaStatus(
+                        locador.getIdUsuario(), cobrancaStatus)
                 .stream().map(cobrancaMapper::toDto)
                 .collect(Collectors.toList());
     }
 
 
     @Transactional
-    public void cancelarCobranca(Integer id){
-        Cobranca cobranca = cobrancaRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Cobranca não encontrada!"));
+    public void cancelarCobranca(Integer id, Usuario locador){
+        Cobranca cobranca = buscarCobrancaDoLocador(id, locador);
 
         if(cobranca.getCobrancaStatus() == CobrancaStatus.PAGA) {
             throw new IllegalStateException("Não é possível cancelar uma cobrança já paga!");
@@ -152,6 +157,7 @@ public class CobrancaService {
     }
 
     private Contrato buscarContratoDoLocador(Integer contratoId, Usuario locador) {
+        exigirLocador(locador);
         Contrato contrato = contratoRepository.findById(contratoId)
                 .orElseThrow(() -> new IllegalArgumentException("Contrato não encontrado."));
         if (!contrato.getImovel().getLocador().getIdUsuario().equals(locador.getIdUsuario())) {
@@ -161,12 +167,19 @@ public class CobrancaService {
     }
 
     private Cobranca buscarCobrancaDoLocador(Integer id, Usuario locador) {
+        exigirLocador(locador);
         Cobranca cobranca = cobrancaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Cobrança não encontrada."));
         if (!cobranca.getContrato().getImovel().getLocador().getIdUsuario().equals(locador.getIdUsuario())) {
             throw new IllegalArgumentException("Cobrança não encontrada.");
         }
         return cobranca;
+    }
+
+    private void exigirLocador(Usuario locador) {
+        if (locador == null || locador.getTipoUsuario() != TipoUsuario.LOCADOR) {
+            throw new AccessDeniedException("Operação disponível somente para proprietários.");
+        }
     }
 
 }

@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -27,6 +28,9 @@ public class PedidoManutencao {
 
     @Column(name = "descricao_problema", nullable = false, columnDefinition = "TEXT")
     private String descricaoProblema;
+
+    @Column(name = "valor_gasto", precision = 12, scale = 2)
+    private BigDecimal valorGasto;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "prioridade", nullable = false)

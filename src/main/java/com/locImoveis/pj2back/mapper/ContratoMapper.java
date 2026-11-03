@@ -15,8 +15,14 @@ public interface ContratoMapper {
     @Mapping(target = "locatario", ignore = true)
     @Mapping(target = "contratoStatus", ignore = true)
     @Mapping(target = "dataProximoReajuste", ignore = true)
+    @Mapping(target = "arquivoPdf", ignore = true)
     Contrato toEntity(ContratoRequestDTO dto);
 
+    @Mapping(source = "imovel.idImovel", target = "imovelId")
+    @Mapping(source = "locatario.idUsuario", target = "locatarioId")
+    @Mapping(source = "locatario.nomeCompleto", target = "locatarioNome")
+    @Mapping(target = "temArquivo", expression = "java(entity.getArquivoPdf() != null && entity.getArquivoPdf().length > 0)")
     ContratoResponseDTO toDto(Contrato entity);
 
 }
+

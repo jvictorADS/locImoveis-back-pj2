@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -56,4 +58,8 @@ public class Contrato {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "locatario_id", nullable = false)
     private Usuario locatario;
+
+    @Column(name = "arquivo_pdf")
+    @JdbcTypeCode(SqlTypes.BINARY)
+    private byte[] arquivoPdf;
 }

@@ -16,9 +16,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -27,7 +30,7 @@ public class DashboardService {
 
     private final CobrancaRepository cobrancaRepository;
     private final ImovelRepository imovelRepository;
-        private final PedidoManutencaoRepository manutencaoRepository;
+    private final PedidoManutencaoRepository manutencaoRepository;
 
     @Transactional(readOnly = true)
     public DashboardResponseDTO buscarResumo(Usuario locador) {
@@ -38,6 +41,12 @@ public class DashboardService {
         List<Imovel> imoveis = imovelRepository.findByLocadorIdUsuario(locador.getIdUsuario());
         List<PedidoManutencao> manutencoes = manutencaoRepository
                 .findByContrato_Imovel_Locador_IdUsuarioOrderByDataAberturaDesc(locador.getIdUsuario());
+        YearMonth mesAtual = YearMonth.from(hoje);
+        YearMonth primeiroMes = mesAtual.minusMonths(11);
+        Map<YearMonth, FluxoCaixaMensal> fluxoCaixaPorMes = new LinkedHashMap<>();
+        for (int mes = 0; mes < 12; mes++) {
+            fluxoCaixaPorMes.put(primeiroMes.plusMonths(mes), new FluxoCaixaMensal());
+        }
 
         BigDecimal recebidoMes = cobrancas.stream()
                 .filter(cobranca -> cobranca.getCobrancaStatus() == CobrancaStatus.PAGA)
@@ -46,6 +55,33 @@ public class DashboardService {
                         && !cobranca.getDataPagamento().isAfter(hoje))
                 .map(Cobranca::getValor)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        cobrancas.forEach(cobranca -> {
+            if (cobranca.getCobrancaStatus() == CobrancaStatus.PAGA && cobranca.getDataPagamento() != null) {
+                FluxoCaixaMensal dadosMes = fluxoCaixaPorMes.get(YearMonth.from(cobranca.getDataPagamento()));
+                if (dadosMes != null) {
+                    dadosMes.recebido = dadosMes.recebido.add(cobranca.getValor());
+                }
+            }
+
+            if ((cobranca.getCobrancaStatus() == CobrancaStatus.PENDENTE
+                    || cobranca.getCobrancaStatus() == CobrancaStatus.ATRASADA)
+                    && cobranca.getDataVencimento().isBefore(hoje)) {
+                FluxoCaixaMensal dadosMes = fluxoCaixaPorMes.get(YearMonth.from(cobranca.getDataVencimento()));
+                if (dadosMes != null) {
+                    dadosMes.inadimplencia = dadosMes.inadimplencia.add(cobranca.getValor());
+                }
+            }
+        });
+
+        manutencoes.stream()
+                .filter(manutencao -> manutencao.getDataAbertura() != null && manutencao.getValorGasto() != null)
+                .forEach(manutencao -> {
+                    FluxoCaixaMensal dadosMes = fluxoCaixaPorMes.get(YearMonth.from(manutencao.getDataAbertura()));
+                    if (dadosMes != null) {
+                        dadosMes.gastosReformas = dadosMes.gastosReformas.add(manutencao.getValorGasto());
+                    }
+                });
 
         BigDecimal totalPendente = cobrancas.stream()
                 .filter(cobranca -> cobranca.getCobrancaStatus() == CobrancaStatus.PENDENTE
@@ -88,7 +124,21 @@ public class DashboardService {
                 totalPendente,
                 imoveisAlugados,
                 imoveisVagos,
-                inadimplentes
+                inadimplentes,
+                fluxoCaixaPorMes.entrySet().stream()
+                        .map(entry -> new DashboardResponseDTO.FluxoCaixaMensalDTO(
+                                entry.getKey().toString(),
+                                entry.getValue().recebido,
+                                entry.getValue().gastosReformas,
+                                entry.getValue().inadimplencia
+                        ))
+                        .toList()
         );
+    }
+
+    private static class FluxoCaixaMensal {
+        private BigDecimal recebido = BigDecimal.ZERO;
+        private BigDecimal gastosReformas = BigDecimal.ZERO;
+        private BigDecimal inadimplencia = BigDecimal.ZERO;
     }
 }

@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface ImovelRepository extends JpaRepository<Imovel, Integer> {
     List<Imovel> findByLocadorIdUsuario(Integer locadorId);
-    List<Imovel> findByOcupacaoStatus(OcupacaoStatus ocupacaoStatus);
+     List<Imovel> findByLocadorIdUsuarioAndOcupacaoStatus(Integer locadorId, OcupacaoStatus ocupacaoStatus);
  }

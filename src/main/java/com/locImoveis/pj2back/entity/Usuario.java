@@ -7,13 +7,17 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "usuarios")
@@ -50,10 +54,33 @@ public class Usuario implements UserDetails {
     private TipoUsuario tipoUsuario;
 
     @OneToMany(mappedBy = "locador")
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private List<Imovel> imovels;
 
     @OneToMany(mappedBy = "locatario")
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private List<Contrato> contratos;
+
+    @ManyToMany
+    @JoinTable(
+            name = "locador_locatarios",
+            joinColumns = @JoinColumn(name = "locador_id"),
+            inverseJoinColumns = @JoinColumn(name = "locatario_id")
+    )
+    @JsonIgnore
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    @Builder.Default
+    private Set<Usuario> locatarios = new HashSet<>();
+
+    @ManyToMany(mappedBy = "locatarios")
+    @JsonIgnore
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    @Builder.Default
+    private Set<Usuario> locadoresResponsaveis = new HashSet<>();
 
     @Override
     @JsonIgnore

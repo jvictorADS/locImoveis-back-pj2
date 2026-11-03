@@ -21,8 +21,11 @@ public class CobrancaController {
     private final CobrancaService cobrancaService;
 
     @PostMapping
-    public ResponseEntity<CobrancaResponseDTO> criar(@RequestBody CobrancaRequestDTO cobrancaDTO){
-        CobrancaResponseDTO response = cobrancaService.criarCobrança(cobrancaDTO);
+    public ResponseEntity<CobrancaResponseDTO> criar(
+            @RequestBody CobrancaRequestDTO cobrancaDTO,
+            @AuthenticationPrincipal Usuario locador
+    ){
+        CobrancaResponseDTO response = cobrancaService.criarCobrança(cobrancaDTO, locador);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -51,23 +54,35 @@ public class CobrancaController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CobrancaResponseDTO> buscarPorId(@PathVariable Integer id){
-        return ResponseEntity.ok(cobrancaService.buscarPorId(id));
+    public ResponseEntity<CobrancaResponseDTO> buscarPorId(
+            @PathVariable Integer id,
+            @AuthenticationPrincipal Usuario locador
+    ){
+        return ResponseEntity.ok(cobrancaService.buscarPorId(id, locador));
     }
 
     @GetMapping("/contrato/{contratoId}")
-    public ResponseEntity<List<CobrancaResponseDTO>> listarPorContrato(@PathVariable Integer contratoId){
-        return ResponseEntity.ok(cobrancaService.listarPorContrato(contratoId));
+    public ResponseEntity<List<CobrancaResponseDTO>> listarPorContrato(
+            @PathVariable Integer contratoId,
+            @AuthenticationPrincipal Usuario locador
+    ){
+        return ResponseEntity.ok(cobrancaService.listarPorContrato(contratoId, locador));
     }
 
     @GetMapping("/status/{status}")
-    public ResponseEntity<List<CobrancaResponseDTO>> listarPorStatus(@PathVariable CobrancaStatus status){
-        return ResponseEntity.ok(cobrancaService.listarPorStatus(status));
+    public ResponseEntity<List<CobrancaResponseDTO>> listarPorStatus(
+            @PathVariable CobrancaStatus status,
+            @AuthenticationPrincipal Usuario locador
+    ){
+        return ResponseEntity.ok(cobrancaService.listarPorStatus(status, locador));
     }
 
     @DeleteMapping("/{id}/cancelar")
-    public ResponseEntity<CobrancaResponseDTO> cancelar(@PathVariable Integer id){
-        cobrancaService.cancelarCobranca(id);
+    public ResponseEntity<CobrancaResponseDTO> cancelar(
+            @PathVariable Integer id,
+            @AuthenticationPrincipal Usuario locador
+    ){
+        cobrancaService.cancelarCobranca(id, locador);
         return ResponseEntity.noContent().build();
     }
 

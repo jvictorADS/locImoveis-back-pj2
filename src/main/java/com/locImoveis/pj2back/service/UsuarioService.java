@@ -34,7 +34,12 @@ public class UsuarioService {
         }
 
         Usuario usuario = usuarioMapper.toEntity(usuarioDTO);
-        usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
+
+        String senhaFinal = (usuarioDTO.senha() != null && !usuarioDTO.senha().isBlank())
+                ? usuarioDTO.senha()
+                : java.util.UUID.randomUUID().toString();
+
+        usuario.setSenha(passwordEncoder.encode(senhaFinal));
         usuario.setContaStatus(ContaStatus.ATIVA);
 
         Usuario usuarioSalvo = usuarioRepository.save(usuario);
@@ -60,7 +65,6 @@ public class UsuarioService {
                 .stream().map(usuarioMapper::toDTO)
                 .collect(Collectors.toList());
     }
-
 
     @Transactional
     public void inativar(Integer id) {

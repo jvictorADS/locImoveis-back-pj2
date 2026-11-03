@@ -7,6 +7,8 @@ public record UsuarioResponseDTO(
     Integer idUsuario,
     String nomeCompleto,
     String email,
+    String cpf,
+    String telefone,
     TipoUsuario tipoUsuario,
     ContaStatus contaStatus
 ) {

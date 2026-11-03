@@ -8,6 +8,7 @@ import java.util.List;
 
 public interface CobrancaRepository extends JpaRepository<Cobranca, Integer> {
     List<Cobranca> findByContratoIdContrato(Integer contratoId);
+    List<Cobranca> findByContratoIdContratoOrderByDataVencimentoAsc(Integer contratoId);
     List<Cobranca> findByCobrancaStatus(CobrancaStatus cobrancaStatus);
     List<Cobranca> findByContrato_Imovel_Locador_IdUsuario(Integer locadorId);
 

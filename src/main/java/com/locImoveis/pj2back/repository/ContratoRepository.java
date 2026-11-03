@@ -9,6 +9,7 @@ import java.util.List;
 public interface ContratoRepository extends JpaRepository<Contrato, Integer> {
     List<Contrato> findByLocatarioIdUsuario(Integer locatarioId);
     List<Contrato> findByImovelIdImovel(Integer imovelId);
+    List<Contrato> findByImovel_Locador_IdUsuarioOrderByDataInicioDesc(Integer locadorId);
 
     Integer imovel(Imovel imovel);
 }

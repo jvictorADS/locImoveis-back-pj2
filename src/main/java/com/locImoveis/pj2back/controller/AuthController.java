@@ -4,6 +4,7 @@ import com.locImoveis.pj2back.dto.auth.AutenticacaoRequestDTO;
 import com.locImoveis.pj2back.dto.auth.LoginResponseDTO;
 import com.locImoveis.pj2back.dto.usuario.UsuarioRequestDTO;
 import com.locImoveis.pj2back.dto.usuario.UsuarioResponseDTO;
+import com.locImoveis.pj2back.dto.usuario.PerfilUpdateDTO;
 import com.locImoveis.pj2back.entity.Usuario;
 import com.locImoveis.pj2back.service.TokenService;
 import com.locImoveis.pj2back.service.UsuarioService;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
 @RequestMapping("/auth")
@@ -49,5 +51,13 @@ public class AuthController {
     @org.springframework.web.bind.annotation.GetMapping("/me")
     public UsuarioResponseDTO me(@AuthenticationPrincipal Usuario usuario) {
         return usuarioService.toResponse(usuario);
+    }
+
+    @PutMapping("/me")
+    public UsuarioResponseDTO atualizarPerfil(
+            @Valid @RequestBody PerfilUpdateDTO perfilDTO,
+            @AuthenticationPrincipal Usuario usuario
+    ) {
+        return usuarioService.atualizarPerfil(perfilDTO, usuario);
     }
 }

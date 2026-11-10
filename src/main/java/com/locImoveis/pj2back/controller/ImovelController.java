@@ -70,6 +70,14 @@ public class ImovelController {
         return ResponseEntity.ok(imovelService.listarPorStatus(status, locador));
     }
 
+    @GetMapping("/locatario/{locatarioId}")
+    public ResponseEntity<List<ImovelResponseDTO>> listarPorLocatario(
+            @PathVariable Integer locatarioId,
+            @AuthenticationPrincipal Usuario locador
+    ) {
+        return ResponseEntity.ok(imovelService.buscarPorLocatario(locatarioId, locador));
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<ImovelResponseDTO> atualizar(
             @PathVariable Integer id,

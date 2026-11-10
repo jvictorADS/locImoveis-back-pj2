@@ -3,11 +3,14 @@ package com.locImoveis.pj2back.service;
 import com.locImoveis.pj2back.dto.imovel.ImovelRequestDTO;
 import com.locImoveis.pj2back.dto.imovel.ImovelResponseDTO;
 import com.locImoveis.pj2back.dto.imovel.ImovelUpdateDTO;
+import com.locImoveis.pj2back.entity.Contrato;
 import com.locImoveis.pj2back.entity.Imovel;
 import com.locImoveis.pj2back.entity.Usuario;
+import com.locImoveis.pj2back.entity.enums.ContratoStatus;
 import com.locImoveis.pj2back.entity.enums.OcupacaoStatus;
 import com.locImoveis.pj2back.entity.enums.TipoUsuario;
 import com.locImoveis.pj2back.mapper.ImovelMapper;
+import com.locImoveis.pj2back.repository.ContratoRepository;
 import com.locImoveis.pj2back.repository.ImovelRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +24,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,6 +35,7 @@ import java.util.stream.Collectors;
 public class ImovelService {
 
     private final ImovelRepository imovelRepository;
+    private final ContratoRepository contratoRepository;
     private final ImovelMapper imovelMapper;
 
 
@@ -66,6 +73,25 @@ public class ImovelService {
         exigirLocador(locador);
         return imovelRepository.findByLocadorIdUsuarioAndOcupacaoStatus(locador.getIdUsuario(), ocupacaoStatus)
                 .stream().map(imovelMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ImovelResponseDTO> buscarPorLocatario(Integer locatarioId, Usuario locador) {
+        exigirLocador(locador);
+        LocalDate hoje = LocalDate.now();
+        Map<Integer, Imovel> imoveis = new LinkedHashMap<>();
+
+        contratoRepository.findByImovel_Locador_IdUsuarioAndLocatario_IdUsuarioAndContratoStatus(
+                        locador.getIdUsuario(), locatarioId, ContratoStatus.ATIVO)
+                .stream()
+                .filter(contrato -> !contrato.getDataInicio().isAfter(hoje)
+                        && !contrato.getDataFim().isBefore(hoje))
+                .map(Contrato::getImovel)
+                .forEach(imovel -> imoveis.putIfAbsent(imovel.getIdImovel(), imovel));
+
+        return imoveis.values().stream()
+                .map(imovelMapper::toDto)
                 .collect(Collectors.toList());
     }
 

@@ -3,6 +3,7 @@ package com.locImoveis.pj2back.service;
 import com.locImoveis.pj2back.dto.usuario.UsuarioRequestDTO;
 import com.locImoveis.pj2back.dto.usuario.UsuarioResponseDTO;
 import com.locImoveis.pj2back.dto.usuario.UsuarioUpdateDTO;
+import com.locImoveis.pj2back.dto.usuario.PerfilUpdateDTO;
 import com.locImoveis.pj2back.entity.Usuario;
 import com.locImoveis.pj2back.entity.enums.ContaStatus;
 import com.locImoveis.pj2back.entity.enums.TipoUsuario;
@@ -73,6 +74,21 @@ public class UsuarioService {
 
     public UsuarioResponseDTO toResponse(Usuario usuario) {
         return usuarioMapper.toDTO(usuario);
+    }
+
+    @Transactional
+    public UsuarioResponseDTO atualizarPerfil(PerfilUpdateDTO perfilDTO, Usuario usuarioAutenticado) {
+        Usuario usuario = usuarioRepository.findById(usuarioAutenticado.getIdUsuario())
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado!"));
+
+        if (!usuario.getCpf().equals(perfilDTO.cpf()) && usuarioRepository.existsByCpf(perfilDTO.cpf())) {
+            throw new IllegalArgumentException("Cpf já existente!");
+        }
+
+        usuario.setNomeCompleto(perfilDTO.nomeCompleto());
+        usuario.setCpf(perfilDTO.cpf());
+        usuario.setTelefone(perfilDTO.telefone());
+        return usuarioMapper.toDTO(usuarioRepository.save(usuario));
     }
 
     public UsuarioResponseDTO buscarPorId(Integer id, Usuario locador) {

@@ -1,5 +1,6 @@
 package com.locImoveis.pj2back.dto.manutencao;
 
+import com.locImoveis.pj2back.entity.enums.PedidoStatus;
 import com.locImoveis.pj2back.entity.enums.Prioridade;
 
 import java.math.BigDecimal;
@@ -11,6 +12,7 @@ public record ManutencaoResponseDTO(
         String descricaoProblema,
         BigDecimal valorGasto,
         Prioridade prioridade,
+        PedidoStatus status,
         Integer contratoId,
         String locatarioNome,
         String imovelEndereco

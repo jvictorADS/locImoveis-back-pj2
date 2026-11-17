@@ -52,6 +52,19 @@ public class DashboardService {
             Integer imovelId,
             CobrancaStatus status
     ) {
+        return buscarResumo(locador, dataInicio, dataFim, locatarioId, imovelId, status, null);
+    }
+
+    @Transactional(readOnly = true)
+    public DashboardResponseDTO buscarResumo(
+            Usuario locador,
+            LocalDate dataInicio,
+            LocalDate dataFim,
+            Integer locatarioId,
+            Integer imovelId,
+            CobrancaStatus status,
+            YearMonth mesSelecionado
+    ) {
         if (dataInicio != null && dataFim != null && dataInicio.isAfter(dataFim)) {
             throw new IllegalArgumentException("A data inicial não pode ser posterior à data final.");
         }
@@ -93,12 +106,16 @@ public class DashboardService {
                 .filter(manutencao -> estaNoPeriodo(manutencao.getDataAbertura(), dataInicio, dataFim))
                 .toList();
         YearMonth mesAtual = YearMonth.from(hoje);
-        YearMonth primeiroMes = dataInicio != null
-                ? YearMonth.from(dataInicio)
-                : dataFim != null
-                        ? YearMonth.from(dataFim).minusMonths(11)
-                        : mesAtual.minusMonths(11);
-        YearMonth ultimoMes = dataFim != null ? YearMonth.from(dataFim) : mesAtual;
+        YearMonth primeiroMes = mesSelecionado != null
+                ? mesSelecionado
+                : dataInicio != null
+                        ? YearMonth.from(dataInicio)
+                        : dataFim != null
+                                ? YearMonth.from(dataFim).minusMonths(11)
+                                : mesAtual.minusMonths(11);
+        YearMonth ultimoMes = mesSelecionado != null
+                ? mesSelecionado
+                : dataFim != null ? YearMonth.from(dataFim) : mesAtual;
         if (primeiroMes.isAfter(ultimoMes)) {
             ultimoMes = primeiroMes;
         }

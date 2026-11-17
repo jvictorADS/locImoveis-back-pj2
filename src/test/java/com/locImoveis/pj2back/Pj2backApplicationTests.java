@@ -151,7 +151,7 @@ class Pj2backApplicationTests {
 		);
 		assertThat(tenantResponse.statusCode()).isEqualTo(201);
 		String tenantId = tenantResponse.body().replaceAll("^.*\"idUsuario\":(\\d+).*$", "$1");
-		int associationCount = jdbcTemplate.queryForObject("""
+		Integer associationCount = jdbcTemplate.queryForObject("""
 				select count(*)
 				from locador_locatarios ll
 				join usuarios locador on locador.id_usuario = ll.locador_id

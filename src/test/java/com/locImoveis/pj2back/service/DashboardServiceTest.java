@@ -144,6 +144,45 @@ class DashboardServiceTest {
     }
 
     @Test
+    void filtraFluxoCaixaPeloMesSelecionado() {
+        Integer locadorId = 12;
+        YearMonth mesSelecionado = YearMonth.of(2026, 3);
+        Contrato contrato = Contrato.builder()
+                .imovel(Imovel.builder().endereco("Rua A").build())
+                .locatario(Usuario.builder().nomeCompleto("Locatario").build())
+                .build();
+        when(cobrancaRepository.findByContrato_Imovel_Locador_IdUsuario(locadorId)).thenReturn(List.of(
+                Cobranca.builder()
+                        .contrato(contrato)
+                        .valor(new BigDecimal("100.00"))
+                        .cobrancaStatus(CobrancaStatus.ATRASADA)
+                        .dataVencimento(mesSelecionado.atDay(10))
+                        .build(),
+                Cobranca.builder()
+                        .contrato(contrato)
+                        .valor(new BigDecimal("250.00"))
+                        .cobrancaStatus(CobrancaStatus.ATRASADA)
+                        .dataVencimento(mesSelecionado.minusMonths(1).atDay(10))
+                        .build()
+        ));
+        when(imovelRepository.findByLocadorIdUsuario(locadorId)).thenReturn(List.of());
+        when(manutencaoRepository.findByContrato_Imovel_Locador_IdUsuarioOrderByDataAberturaDesc(locadorId))
+                .thenReturn(List.of());
+
+        var resumo = dashboardService.buscarResumo(
+                Usuario.builder().idUsuario(locadorId).build(),
+                null, null, null, null, null, mesSelecionado);
+
+        assertThat(resumo.fluxoCaixa()).containsExactly(
+                new DashboardResponseDTO.FluxoCaixaMensalDTO(
+                        mesSelecionado.toString(),
+                        BigDecimal.ZERO,
+                        BigDecimal.ZERO,
+                        new BigDecimal("100.00")));
+        assertThat(resumo.totalPendente()).isEqualByComparingTo("350.00");
+    }
+
+    @Test
     void filtraDadosPorInquilinoImovelEStatus() {
         Integer locadorId = 12;
         Integer locatarioId = 34;

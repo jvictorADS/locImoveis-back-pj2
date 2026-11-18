@@ -3,6 +3,7 @@ package com.locImoveis.pj2back.controller;
 import com.locImoveis.pj2back.dto.manutencao.ContratoOpcaoDTO;
 import com.locImoveis.pj2back.dto.manutencao.ManutencaoRequestDTO;
 import com.locImoveis.pj2back.dto.manutencao.ManutencaoResponseDTO;
+import com.locImoveis.pj2back.dto.manutencao.ManutencaoStatusRequestDTO;
 import com.locImoveis.pj2back.entity.Usuario;
 import com.locImoveis.pj2back.service.PedidoManutencaoService;
 import jakarta.validation.Valid;
@@ -24,6 +25,11 @@ public class PedidoManutencaoController {
     @GetMapping
     public List<ManutencaoResponseDTO> listar(@AuthenticationPrincipal Usuario locador) {
         return manutencaoService.listar(locador);
+    }
+
+    @GetMapping("/meus")
+    public List<ManutencaoResponseDTO> listarDoLocatario(@AuthenticationPrincipal Usuario locatario) {
+        return manutencaoService.listarDoLocatario(locatario);
     }
 
     @GetMapping("/contratos")
@@ -54,6 +60,15 @@ public class PedidoManutencaoController {
             @AuthenticationPrincipal Usuario locador
     ) {
         return manutencaoService.atualizar(id, dto, locador);
+    }
+
+    @PutMapping("/{id}/status")
+    public ManutencaoResponseDTO atualizarStatus(
+            @PathVariable Integer id,
+            @Valid @RequestBody ManutencaoStatusRequestDTO dto,
+            @AuthenticationPrincipal Usuario locador
+    ) {
+        return manutencaoService.atualizarStatus(id, dto.status(), locador);
     }
 
     @DeleteMapping("/{id}")

@@ -1,5 +1,6 @@
 package com.locImoveis.pj2back.entity;
 
+import com.locImoveis.pj2back.entity.enums.PedidoStatus;
 import com.locImoveis.pj2back.entity.enums.Prioridade;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -36,6 +37,12 @@ public class PedidoManutencao {
     @Column(name = "prioridade", nullable = false)
     private Prioridade prioridade;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "pedido_status", nullable = false, length = 20,
+            columnDefinition = "varchar(20) default 'ABERTO'")
+    @Builder.Default
+    private PedidoStatus status = PedidoStatus.ABERTO;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contrato_id", nullable = false)
     private Contrato contrato;
@@ -43,6 +50,9 @@ public class PedidoManutencao {
     @PrePersist
     protected void onCreate() {
         this.dataAbertura = LocalDate.now();
+        if (this.status == null) {
+            this.status = PedidoStatus.ABERTO;
+        }
     }
 
 }

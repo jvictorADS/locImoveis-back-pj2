@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface PedidoManutencaoRepository extends JpaRepository<PedidoManutencao, Integer> {
     List<PedidoManutencao> findByContrato_Imovel_Locador_IdUsuarioOrderByDataAberturaDesc(Integer locadorId);
+    List<PedidoManutencao> findByContrato_Locatario_IdUsuarioOrderByDataAberturaDesc(Integer locatarioId);
 }

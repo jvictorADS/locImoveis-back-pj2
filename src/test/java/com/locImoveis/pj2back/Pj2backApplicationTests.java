@@ -151,7 +151,7 @@ class Pj2backApplicationTests {
 		);
 		assertThat(tenantResponse.statusCode()).isEqualTo(201);
 		String tenantId = tenantResponse.body().replaceAll("^.*\"idUsuario\":(\\d+).*$", "$1");
-		int associationCount = jdbcTemplate.queryForObject("""
+		Integer associationCount = jdbcTemplate.queryForObject("""
 				select count(*)
 				from locador_locatarios ll
 				join usuarios locador on locador.id_usuario = ll.locador_id
@@ -180,6 +180,96 @@ class Pj2backApplicationTests {
 
 		assertThat(listingResponse.statusCode()).isEqualTo(200);
 		assertThat(listingResponse.body()).contains(tenantEmail, "\"tipoUsuario\":\"LOCATARIO\"");
+	}
+
+	@Test
+	void propertyCrudReturnsAddressAndPropertyTax() throws IOException, InterruptedException {
+		String suffix = UUID.randomUUID().toString().replace("-", "");
+		String email = "property-owner-" + suffix + "@example.com";
+		String senha = "Senha@123";
+		HttpResponse<String> registerResponse = httpClient.send(
+				HttpRequest.newBuilder(uri("/auth/register"))
+						.header("Content-Type", "application/json")
+						.POST(HttpRequest.BodyPublishers.ofString("""
+								{
+								  "nomeCompleto": "Proprietário de Imóvel",
+								  "cpf": "%s",
+								  "telefone": "11999999999",
+								  "email": "%s",
+								  "senha": "%s",
+								  "tipoUsuario": "LOCADOR"
+								}
+								""".formatted(suffix.substring(0, 11), email, senha)))
+						.build(),
+				HttpResponse.BodyHandlers.ofString()
+		);
+		assertThat(registerResponse.statusCode()).isEqualTo(201);
+
+		HttpResponse<String> loginResponse = httpClient.send(
+				HttpRequest.newBuilder(uri("/auth/login"))
+						.header("Content-Type", "application/json")
+						.POST(HttpRequest.BodyPublishers.ofString("""
+								{"email":"%s","senha":"%s"}
+								""".formatted(email, senha)))
+						.build(),
+				HttpResponse.BodyHandlers.ofString()
+		);
+		assertThat(loginResponse.statusCode()).isEqualTo(200);
+		String token = loginResponse.body().replaceAll("^.*\"token\":\"([^\"]+)\".*$", "$1");
+
+		HttpResponse<String> createResponse = httpClient.send(
+				HttpRequest.newBuilder(uri("/imoveis"))
+						.header("Content-Type", "application/json")
+						.header("Authorization", "Bearer " + token)
+						.POST(HttpRequest.BodyPublishers.ofString("""
+								{
+								  "endereco": "Rua Inicial, 10",
+								  "valorAluguel": 1800.00,
+								  "valorIPTU": 80.00
+								}
+								"""))
+						.build(),
+				HttpResponse.BodyHandlers.ofString()
+		);
+		assertThat(createResponse.statusCode()).isEqualTo(201);
+		assertThat(createResponse.body()).contains("\"endereco\":\"Rua Inicial, 10\"", "\"valorIPTU\":80.00");
+		String imovelId = createResponse.body().replaceAll("^.*\"idImovel\":(\\d+).*$", "$1");
+
+		HttpResponse<String> listResponse = httpClient.send(
+				HttpRequest.newBuilder(uri("/imoveis/me"))
+						.header("Authorization", "Bearer " + token)
+						.GET()
+						.build(),
+				HttpResponse.BodyHandlers.ofString()
+		);
+		assertThat(listResponse.statusCode()).isEqualTo(200);
+		assertThat(listResponse.body()).contains("\"endereco\":\"Rua Inicial, 10\"", "\"valorIPTU\":80.00");
+
+		HttpResponse<String> updateResponse = httpClient.send(
+				HttpRequest.newBuilder(uri("/imoveis/" + imovelId))
+						.header("Content-Type", "application/json")
+						.header("Authorization", "Bearer " + token)
+						.PUT(HttpRequest.BodyPublishers.ofString("""
+								{
+								  "endereco": "Rua Atualizada, 20",
+								  "valorAluguel": 2200.00,
+								  "valorIPTU": 95.50
+								}
+								"""))
+						.build(),
+				HttpResponse.BodyHandlers.ofString()
+		);
+		assertThat(updateResponse.statusCode()).isEqualTo(200);
+		assertThat(updateResponse.body()).contains("\"endereco\":\"Rua Atualizada, 20\"", "\"valorIPTU\":95.50");
+
+		HttpResponse<String> deleteResponse = httpClient.send(
+				HttpRequest.newBuilder(uri("/imoveis/" + imovelId))
+						.header("Authorization", "Bearer " + token)
+						.DELETE()
+						.build(),
+				HttpResponse.BodyHandlers.ofString()
+		);
+		assertThat(deleteResponse.statusCode()).isEqualTo(204);
 	}
 
 	private URI uri(String path) {

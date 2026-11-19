@@ -1,6 +1,7 @@
 package com.locImoveis.pj2back.dto.dashboard;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 public record DashboardResponseDTO(
@@ -23,6 +24,7 @@ public record DashboardResponseDTO(
             Integer id,
             String inquilino,
             String imovel,
+            LocalDate dataVencimento,
             long diasAtraso,
             BigDecimal valor
     ) {}

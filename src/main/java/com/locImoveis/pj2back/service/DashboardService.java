@@ -86,6 +86,7 @@ public class DashboardService {
         BigDecimal totalPendente = cobrancas.stream()
                 .filter(cobranca -> cobranca.getCobrancaStatus() == CobrancaStatus.PENDENTE
                         || cobranca.getCobrancaStatus() == CobrancaStatus.ATRASADA)
+                .filter(cobranca -> cobranca.getDataVencimento().isBefore(hoje))
                 .map(Cobranca::getValor)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
@@ -106,6 +107,7 @@ public class DashboardService {
                         cobranca.getIdCobranca(),
                         cobranca.getContrato().getLocatario().getNomeCompleto(),
                         cobranca.getContrato().getImovel().getEndereco(),
+                        cobranca.getDataVencimento(),
                         ChronoUnit.DAYS.between(cobranca.getDataVencimento(), hoje),
                         cobranca.getValor()
                 ))
